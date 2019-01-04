@@ -11,7 +11,7 @@ NOTE: Magical two-handed weapons are more powerful than their single-handed coun
 
 Proficient (1 slot): The wielder gets a -1 bonus to AC, and additional -1 when against missile weapons, and a +5 bonus to piercing and missle damage resistance.
 
-Specialized (2 slots): The wielder gets a -2 bonus to AC, and additional -2 when against missile weapons, and a +20 bonus to piercing and missle damage resistance. Even more, every successful melee hit can make 3 additional stun damage (not legal damage like a character except monks hits the target with bare hands) to the target.
+Specialized (2 slots): The wielder gets a -2 bonus to AC, and additional -2 when against missile weapons, and a +20 bonus to piercing and missle damage resistance. Even more, every successful melee hit from the wielder has a chance to trigger Smite attack, deals an additional stun damage. The damage is "AC modifier from the shield * 4", and the target hit by Smite will suffer double damage if he failed to pass Save vs Breath. Smite can only be triggered once per round.
 
 NOTE: Despite the name of this style, any one-handed melee weapon in combination with a shield will receive the aforementioned bonuses.~
 
