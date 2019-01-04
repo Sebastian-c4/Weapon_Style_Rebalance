@@ -1,0 +1,32 @@
+BACKUP ~_c4mods_external/c4WSREE/backup~
+AUTHOR ~c4demon@gmail.com~
+
+VERSION ~v1.0~
+AUTO_EVAL_STRINGS
+
+README ~c4WSREE/lang/%LANGUAGE%/readme.pdf~
+
+ALWAYS
+	
+	OUTER_SPRINT mod_root c4WSREE
+	OUTER_SPRINT base_language "english"
+	INCLUDE "c4WSREE/lib/_immutatable.tph"
+	INCLUDE "c4WSREE/lib/_always.tph"
+
+END
+
+LANGUAGE	~English~
+					~english~ 
+					~c4WSREE/lang/english/setup.tra~
+
+LANGUAGE 	~Simplified Chinese~
+					~schinese~
+					~c4WSREE/lang/schinese/prompts/prompts-%WEIDU_OS%.tra~
+					~c4WSREE/lang/schinese/setup.tra~
+
+BEGIN  @-1
+DESIGNATED 1
+REQUIRE_PREDICATE GAME_IS ~iwdee bgee sod bg2ee eet~ @-10000
+
+LAF run STR_VAR file=wsree file_loc=components tra=game END
+

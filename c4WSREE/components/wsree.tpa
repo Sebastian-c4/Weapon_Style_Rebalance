@@ -1,0 +1,127 @@
+
+DEFINE_ACTION_FUNCTION wsree BEGIN
+
+	COPY ~%mod_root%/2da~ override
+	COPY ~%mod_root%/eff~ override
+	COPY ~%mod_root%/spl~ override
+	
+	//ÎÄ±¾
+	ACTION_IF GAME_IS_BGEE || GAME_IS_SOD BEGIN
+		STRING_SET 25044 @1
+		STRING_SET 25045 @2
+		STRING_SET 25046 @3
+		STRING_SET 24999 @4
+	END
+	ACTION_IF GAME_IS_BG2EE || GAME_IS_EET BEGIN
+		STRING_SET 34171 @1
+		STRING_SET 34173 @2
+		STRING_SET 34174 @3
+		STRING_SET 34176 @4
+	END
+	ACTION_IF GAME_IS_IWDEE BEGIN
+		STRING_SET 37728 @1
+		STRING_SET 37730 @2
+		STRING_SET 37732 @3
+		STRING_SET 37734 @4
+	END
+	
+	//Ë«ÊÖ
+	LAF ADD_SPLPROT_ENTRY INT_VAR stat=111 value=2 relation=5 RET NOTPROF2HAND2=index END
+	LAF ADD_SPLPROT_ENTRY INT_VAR stat=36 value=~-1~ relation=1 RET STR=index END
+	
+	COPY_EXISTING ~c4wsra0.eff~ override
+		WRITE_LONG 0x20 ~%NOTPROF2HAND2%~
+	
+	COPY_EXISTING ~c4wsra0.spl~ override
+		FOR (i=1;i<8;++i) BEGIN
+			LPF ADD_SPELL_EFFECT INT_VAR opcode=206 target=2 duration=1 STR_VAR resource=~c4wsra%i%~ END
+		END
+		
+	OUTER_FOR (i=1;i<7;++i) BEGIN
+		OUTER_SET m=12+i*2
+		OUTER_SET n=m+1
+		
+		COPY_EXISTING ~c4wsra0.eff~ ~override/c4wsra%m%.eff~
+			WRITE_LONG 0x1c m
+			WRITE_LONG 0x20 ~%STR%~
+			WRITE_ASCIIE 0x30 ~c4wsra%i%~
+		
+		COPY_EXISTING ~c4wsra%m%.eff~ ~override/c4wsra%n%.eff~
+			WRITE_LONG 0x1c n
+
+		COPY ~%mod_root%/spl/c4wsra0.spl~ ~override/c4wsra%i%.spl~
+			FOR (j=1;j<8;++j) BEGIN
+				LPF ADD_SPELL_EFFECT INT_VAR opcode=321 target=2 STR_VAR resource=~c4wsra%j%~ END
+			END
+			LPF ADD_SPELL_EFFECT INT_VAR opcode=324 target=2 duration=1 parameter2=~%NOTPROF2HAND2%~ STR_VAR resource=~%DEST_RES%~ END
+			LPF ADD_SPELL_EFFECT INT_VAR opcode=73 target=2 duration=1 parameter1=i END
+	END
+
+	COPY_EXISTING ~c4wsra0.eff~ ~override/c4wsra25.eff~
+		WRITE_LONG 0x1c 25
+		WRITE_LONG 0x20 ~%STR%~
+		WRITE_ASCII 0x30 ~c4wsra7~
+
+	COPY ~%mod_root%/spl/c4wsra0.spl~ ~override/c4wsra7.spl~
+		FOR (j=1;j<8;++j) BEGIN
+			LPF ADD_SPELL_EFFECT INT_VAR opcode=321 target=2 STR_VAR resource=~c4wsra%j%~ END
+		END
+		LPF ADD_SPELL_EFFECT INT_VAR opcode=324 target=2 duration=1 parameter2=~%NOTPROF2HAND2%~ STR_VAR resource=~%DEST_RES%~ END
+		LPF ADD_SPELL_EFFECT INT_VAR opcode=73 target=2 duration=1 parameter1=7 END
+
+	COPY_EXISTING_REGEXP GLOB ~.*\.itm~ override
+		READ_BYTE 0x18 flag
+		PATCH_IF (~%flag%~ BAND 0b00000010) = 0b00000010 BEGIN
+			READ_SHORT 0x1c type
+			PATCH_IF type=20 || type=26 || type=29 || type=30 BEGIN
+				SET notmelee=0
+				// GET_OFFSET_ARRAY header ITM_V10_HEADERS
+				// PHP_EACH header AS int => index BEGIN
+					// READ_BYTE index atype
+					// PATCH_IF atype=2 BEGIN
+						// SET notmelee=1
+					// END
+				// END
+				PATCH_IF !notmelee BEGIN
+					LPF ADD_ITEM_EQEFFECT INT_VAR insert_point=~-1~ opcode=272 target=1 timing=2 parameter1=1 parameter2=3 STR_VAR resource=~c4wsra0~ END
+					FOR (i=14;i<26;++i) BEGIN
+						LPF ADD_ITEM_EQEFFECT INT_VAR insert_point=~-1~ opcode=272 target=1 timing=2 parameter1=1 parameter2=3 STR_VAR resource=~c4wsra%i%~ END
+					END
+				END
+			END
+		END
+		BUT_ONLY
+	
+
+	//½£¶Ü
+	LAF ADD_SPLPROT_ENTRY INT_VAR stat=112 value=1 relation=1 RET shield1=index END
+	LAF ADD_SPLPROT_ENTRY INT_VAR stat=112 value=2 relation=1 RET shield2=index END
+	LAF ADD_SPLPROT_ENTRY INT_VAR stat=0x104 value=shield1 relation=shield2 RET shield0=index END
+
+	OUTER_FOR (i=0;i<3;++i) BEGIN
+		COPY_EXISTING ~c4wsrb%i%.eff~ override
+			WRITE_LONG 0x20 ~%shield%i%%~
+	END
+
+	COPY_EXISTING_REGEXP GLOB ~.*\.itm~ override
+		READ_SHORT 0x1c type
+		PATCH_IF type=0xc BEGIN
+			ac=0
+			GET_OFFSET_ARRAY effect ITM_V10_GEN_EFFECTS
+			PHP_EACH effect AS int => offset BEGIN
+				READ_SHORT offset opcode
+				READ_LONG offset+4 para1
+				READ_LONG offset+8 para2
+				PATCH_IF opcode=0 && para1>0 && para2=0 BEGIN
+					ac=1
+				END
+			END
+			PATCH_IF ac=1 BEGIN
+				FOR (i=0;i<3;++i) BEGIN
+					LPF CLONE_EFFECT INT_VAR match_opcode=0 match_parameter2=0 opcode=272 parameter1=1 parameter2=3 STR_VAR resource=~c4wsrb%i%~ insert=last END
+				END
+			END
+		END
+		BUT_ONLY
+
+END
